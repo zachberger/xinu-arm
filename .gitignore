@@ -4,6 +4,7 @@
 *.hex
 *.bin
 *.a
+*.dSYM
 
 # Generated Source Files #
 ##########################

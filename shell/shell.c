@@ -56,6 +56,7 @@ const struct centry commandtab[] = {
 #if NVRAM
     {"nvram", FALSE, xsh_nvram},
 #endif
+    {"printtos", TRUE, xsh_printtos},
     {"ps", FALSE, xsh_ps},
 #if NETHER
     {"ping", FALSE, xsh_ping},
