@@ -3,6 +3,7 @@
 #
 #  $Id: Makefile 2132 2009-11-17 23:22:38Z brylow $
 
+#PLATFORM = arm-qemu
 PLATFORM = raspberry-pi
 
 DETAIL   = -DDETAIL
@@ -96,6 +97,9 @@ ${KERNARC}: ${COMP_OBJ} ${CONF_OBJ} ../system/unistd.o
 	${AR} cr ${KERNARC} $^
 
 objects: ${COMP_OBJ}
+
+uboot:
+	make -e -C ${TOPDIR}/boot/raspberry-pi/u-boot rpi_b CROSS_COMPILE=${CROSS_COMPILER} 
 
 clean:
 	rm -f *.o ${COMP_OBJ} ${CONF_OBJ} ${MAIN_OBJ} ${DATA_OBJ}

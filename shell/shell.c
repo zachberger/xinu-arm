@@ -89,6 +89,8 @@ const struct centry commandtab[] = {
     {"voip", FALSE, xsh_voip},
     {"xweb", FALSE, xsh_xweb},
 #endif
+    {"ledon", FALSE, xsh_ledon},
+    {"ledoff", FALSE, xsh_ledoff},
     {"?", FALSE, xsh_help}
 };
 
