@@ -31,6 +31,7 @@ const struct centry commandtab[] = {
     {"ethstat", FALSE, xsh_ethstat},
 #endif
     {"exit", TRUE, xsh_exit},
+    {"fbtest", TRUE, xsh_fbtest},
 #if NFLASH
     {"flashstat", FALSE, xsh_flashstat},
 #endif
@@ -56,6 +57,7 @@ const struct centry commandtab[] = {
 #if NVRAM
     {"nvram", FALSE, xsh_nvram},
 #endif
+    {"printprocstks", TRUE, xsh_printprocstks},
     {"printtos", TRUE, xsh_printtos},
     {"ps", FALSE, xsh_ps},
 #if NETHER

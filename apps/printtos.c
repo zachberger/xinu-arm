@@ -9,28 +9,31 @@
 #include <stdio.h>
 
 static void myfuncA() {
-    int dummy[2];
-
-    int d = &(dummy[0]) - &(dummy[1]);
-    unsigned int* sp = (&dummy[0]) + d;
+    //unsigned int* stkptr = 0;
+    //asm("mov %[result], sp" : [result] "=r" (stkptr) :);
+    register unsigned int* stkptr asm ("sp");
+    printf("SP: %d\n", stkptr);
     printf(
-        "1. %d\n2. %d\n3. %d\n4. %d\n5. %d\n",
-        *(sp), *(sp + (d * 1)), *(sp + (d * 2)), *(sp + (d * 3)), *(sp + (d * 4))
+        "1. %d = %d\n2. %d = %d\n3. %d = %d\n4. %d = %d\n5. %d = %d\n",
+        stkptr, *(stkptr),
+        stkptr + 1, *(stkptr + 1),
+        stkptr + 2, *(stkptr + 2),
+        stkptr + 3, *(stkptr + 3),
+        stkptr + 4, *(stkptr + 4)
     );
 }
 
 static void myprogA() {
-    {
-        int dummy[2];
-
-        int d = &(dummy[0]) - &(dummy[1]);
-        unsigned int* sp = (&dummy[0]) + d;
-        printf(
-            "1. %d\n2. %d\n3. %d\n4. %d\n5. %d\n",
-            *(sp), *(sp + (d * 1)), *(sp + (d * 2)), *(sp + (d * 3)), *(sp + (d * 4))
-        );
-    }
-
+    register unsigned int* stkptr asm ("sp");
+    printf("SP: %d\n", stkptr);
+    printf(
+        "1. %d = %d\n2. %d = %d\n3. %d = %d\n4. %d = %d\n5. %d = %d\n\n",
+        stkptr, *(stkptr),
+        stkptr + 1, *(stkptr + 1),
+        stkptr + 2, *(stkptr + 2),
+        stkptr + 3, *(stkptr + 3),
+        stkptr + 4, *(stkptr + 4)
+    );
     myfuncA();
 }
 

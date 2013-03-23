@@ -8,7 +8,7 @@ COMP = system/platforms/raspberry-pi
 # Important system components
 S_FILES = ctxsw.S pause.S halt.S
 # C_FILES = debug.c debugret.c create.c debug.c handlers.c interrupt.c platforminit.c stubs.c vic.c timer.c clkupdate.c irq.c
-C_FILES = clkupdate.c create.c handlers.c interrupt.c platforminit.c stubs.c vic.c 
+C_FILES = debugret.c clkupdate.c create.c handlers.c interrupt.c platforminit.c stubs.c vic.c 
 
 PDIR = $(TOPDIR)/$(COMP)
 $(PDIR)/vic.o: $(PDIR)/vic.c $(PDIR)/vic.h

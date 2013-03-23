@@ -2,7 +2,7 @@
  * xsh_printtos.c
  *
  * Date: March 11, 2013
- * Author: Jedd Haberstr
+ * Author: Jedd Haberstro
  */
 
 #include <shell.h>
