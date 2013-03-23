@@ -16,11 +16,10 @@ static void myprogA() {
     //asm("mov %[result], sp" : [result] "=r" (stkptr) :);
     //asm("mov %[result], sl" : [result] "=r" (stklim) :);
     register unsigned int* stkptr asm ("sp");
-    register unsigned int stklim asm ("sl");
     printf("PID: %d\n", tid);
     printf("\tStack:\tBase = %u\n", (unsigned int)thr->stkbase);
     printf("\t\tLength = %u\n", thr->stklen);
-    printf("\t\tLimit = %u\n", stklim);
+    printf("\t\tLimit = %u\n", (unsigned int)thr->stkbase - MINSTK);
     printf("\t\tPtr = %u\n", stkptr);
 }
 
