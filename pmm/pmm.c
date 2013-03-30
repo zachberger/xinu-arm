@@ -48,7 +48,9 @@ intptr_t pmm_alloc_frame() {
     size_t numberOfBitmapEntries = _memReqs / entrySize;
     for (i = _firstFreeFrameIndex; i < numberOfBitmapEntries; ++i) {
         uint32_t entry = _bitmap[i];
-        if (entry != 0xFFFFFFFF) {
+
+        // I want to compare entry to the MAX_VAL(typeof(entry)), but we don't have that constant, so I just flip the bits and compare to 0.
+        if ((~entry) != 0) {
             for (bit = 0; bit < (entrySize * 8); ++bit) {
                 if ((entry & (1 << bit)) == 0) {
                     _firstFreeFrameIndex = i;
