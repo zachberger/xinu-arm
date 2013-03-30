@@ -5,7 +5,7 @@
  * Date: March 26, 2013
  *
  * The PMM employs a bitmap vector to keep track of alloced/free frames.
- * Allocated is O(n), deallocation is O(1), and the memory requirement is small (1 byte per 8 frame)
+ * Allocation is O(n), deallocation is O(1), and the memory requirement is small (1 byte per 8 frames)
  * A 0 bit signifies that the frame has not been allocated, and (obviously) a 1 bit signifies that the frame has been allocated.
  *
  * TODO - Testing!
@@ -19,7 +19,7 @@ static uint32_t* _bitmap = NULL;            // Start of the bitmap
 static uint8_t* _alignedHeapStart = NULL;   // Start of the heap from which to allocate frames
 static size_t _maxFrames = 0;               // Maximum possible of frames that can be allocated
 static size_t _memReqs = 0;                 // Size of the memory region (in # of bytes) that the pmm can use for keeping track of frames.
-static size_t _firstFreeFrameIndex = 0;     // Keep track of where the first unallocated frame is located to alleviate the O(n) allocation time.
+static size_t _firstFreeFrameIndex = 0;     // Keeps track of where the first unallocated frame is located to alleviate the O(n) allocation time.
 
 size_t pmm_mem_reqs(size_t heapSize) {
     _maxFrames = heapSize / PMM_FRAME_SIZE;

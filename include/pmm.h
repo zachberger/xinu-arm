@@ -32,7 +32,7 @@ void pmm_init(void* memheap, void* pmmstart);
 /**
  * Allocate one frame.
  *
- * return - address to a new frame, or NULL if out of memory.
+ * return - physical address to a new frame, or NULL if out of memory.
  */
 intptr_t pmm_alloc_frame(void);
 
