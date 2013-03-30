@@ -54,7 +54,7 @@ OCFLAGS  = -I binary -O elf32-littlemips -B mips
 CPFLAGS = -O ihex
 
 # Embedded Xinu components to build into kernel image
-APPCOMPS  = apps mailbox shell # test network # mem
+APPCOMPS  = apps mailbox shell pmm  # test network # mem
 
 DEVICES = loopback uart-pl011 tty #uart-ns16550 #uart-arm-qemu raw tty #uart-ns16550
 #DEVICES = loopback led tty uart-ns16550 #uart-arm-qemu raw tty #uart-ns16550
