@@ -24,8 +24,8 @@ size_t pmm_mem_reqs(size_t heapSize);
 /**
  * Initialize the physical memory manager.
  *
- * memheap - the start of the heap, as determined by the kernel initialization
- * pmmstart - the memory space the pmm can use to keep track of free/alloced frames. Must be at least pmm_mem_reqs() in size.
+ * memheap - physical address to the start of the heap, as determined by the kernel initialization
+ * pmmstart - the memory space the pmm can use to keep track of free/alloced frames (virtual address if MMU enabled). Must be at least pmm_mem_reqs() in size.
  */
 void pmm_init(void* memheap, void* pmmstart);
 
