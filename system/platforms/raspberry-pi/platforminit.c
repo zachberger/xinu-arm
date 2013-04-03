@@ -65,6 +65,104 @@ int platforminit( void )
     //platform.uart_dll = 1337 /*Divisor Latch Low Byte, not useful?*/ /** \todo fixme */;
     //platform.uart_irqnum = 0; /*UART IRQ number? Not read anywhere.*/
 
+    typedef struct __attribute__ ((__packed__)) {
+        unsigned start  : 3;
+        unsigned ns     : 2;
+        unsigned domain : 4;
+        unsigned p      : 1;
+        unsigned addr   : 22;
+    } coarse_descriptor;
+
+    typedef struct __attribute__ ((__packed__)) {
+        unsigned xn   : 1;
+        unsigned one  : 1;
+        unsigned b    : 1;
+        unsigned c    : 1;
+        unsigned ap   : 2;
+        unsigned tex  : 3;
+        unsigned apx  : 1;
+        unsigned s    : 1;
+        unsigned ng   : 1;
+        unsigned addr : 20;
+    } small_page_descriptor;
+
+    typedef struct {
+        coarse_descriptor descriptors[4096];
+    } l1_table;
+
+    typedef struct {
+        small_page_descriptor ptes[256];
+    } l2_table;
+
+    static l1_table master;
+    static l2_table tables[512];
+    int coarse, entry;
+    for (coarse = 0; coarse < 512; ++coarse) {
+        master.descriptors[coarse].start = 1;
+        master.descriptors[coarse].ns = 1;
+        master.descriptors[coarse].domain = 0;
+        master.descriptors[coarse].p = 1;
+        master.descriptors[coarse].addr = ;
+        for (entry = 0; entry < 256; ++entry) {
+
+        }
+    }
+
+    //static struct __attribute__ ((__packed__)) {
+    //    struct __attribute__ ((__packed__)) {
+    //        unsigned zero : 1;
+    //        unsigned one  : 1;
+    //        unsigned b    : 1;
+    //        unsigned c    : 1;
+    //        unsigned xn   : 1;
+    //        unsigned ign0 : 4;
+    //        unsigned imp  : 1;
+    //        unsigned ap   : 2;
+    //        unsigned tex  : 3;
+    //        unsigned apx  : 1;
+    //        unsigned s    : 1;
+    //        unsigned nG   : 1;
+    //        unsigned zero2: 1;
+    //        unsigned ns   : 1;
+    //        unsigned base : 12;
+    //    } entries[4096];
+    //} tlb_l1 __attribute__ ((aligned(0x4000))); // 16 KB aligned
+
+    //for (i = 0; i < 4096; ++i) {
+    //    tlb_l1.entries[i].zero = 0; //
+    //    tlb_l1.entries[i].one = 1;  //
+    //    tlb_l1.entries[i].b = 0;    //
+    //    tlb_l1.entries[i].c = 0;    //
+    //    tlb_l1.entries[i].xn = 1;   //
+    //    tlb_l1.entries[i].ign0 = 0; // 
+    //    tlb_l1.entries[i].imp = 0;  // 
+    //    tlb_l1.entries[i].ap = 0;   //
+    //    tlb_l1.entries[i].tex = 0;  // 
+    //    tlb_l1.entries[i].apx = 0;  //
+    //    tlb_l1.entries[i].s = 0;    //
+    //    tlb_l1.entries[i].nG = 0;   // 
+    //    tlb_l1.entries[i].zero2 = 0;//
+    //    tlb_l1.entries[i].ns = 0;   //
+    //    tlb_l1.entries[i].base = i;
+    //}
+    //
+    //uint tlb_l1_base = (uint)&tlb_l1;
+    //asm("mcr p15, 0, %0, c2, c0, 0" : : "r" (tlb_l1_base));
+
+    //// section table entry
+    ////uint dest_addr = tlb_l1_base | (0x080 * 4);
+    ////uint entry = tlb_l1_base | 0xc02;
+    ////*(uint*)(dest_addr) = entry;
+
+    //// domain AP: "manager" (AP not checked)
+    //asm("mov r0, #0x3");
+    //asm("mcr p15, 0, r0, c3, c0, 0");
+
+    //// enable
+    //asm("mrc p15, 0, r0, c1, c0, 0");
+    //asm("orr r0, r0, #0x1");
+    //asm("mcr p15, 0, r0, c1, c0, 0");
+
 
     return OK;
 }
