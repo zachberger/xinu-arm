@@ -99,6 +99,9 @@ int platforminit( void )
         small_page_descriptor ptes[256];
     } l2_table;
 
+    // 512 mb requires:
+    //  - 131072 pages
+    //  - 512 tables
     static l1_table master __attribute__ ((aligned(0x4000)));
     static l2_table tables[512] __attribute__ ((aligned(0x4000)));
     int coarse, entry;
@@ -111,16 +114,16 @@ int platforminit( void )
         master.descriptors[coarse].p = 1;
         master.descriptors[coarse].addr = ((intptr_t)l2) >> 10;
         for (entry = 0; entry < 256; ++entry) {
-            l2->ptes[256].xn = 1;  
-            l2->ptes[256].one = 1;  
-            l2->ptes[256].b = 0;  
-            l2->ptes[256].c = 0;  
-            l2->ptes[256].ap = 3;  // kernel read/write ? 
-            l2->ptes[256].tex = 0;  
-            l2->ptes[256].apx = 0;  
-            l2->ptes[256].s = 0;
-            l2->ptes[256].ng = 0;  
-            l2->ptes[256].addr = currentAddress >> 12;
+            l2->ptes[entry].xn = 1;  
+            l2->ptes[entry].one = 1;  
+            l2->ptes[entry].b = 0;  
+            l2->ptes[entry].c = 0;  
+            l2->ptes[entry].ap = 3;  // kernel read/write ? 
+            l2->ptes[entry].tex = 0;  
+            l2->ptes[entry].apx = 0;  
+            l2->ptes[entry].s = 0;
+            l2->ptes[entry].ng = 0;  
+            l2->ptes[entry].addr = currentAddress >> 12;
             currentAddress += 0x4000;
         }
     }
