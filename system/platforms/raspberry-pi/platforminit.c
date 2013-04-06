@@ -39,27 +39,28 @@ void dump_table(pde_t *table, int start, int end) {
 void init_table(coarse_t *pd, vaddr_t virt, paddr_t phys, int size) {
     volatile coarse_t *ptr; 
     volatile pde_t entry;
-    int i, count, addr_offset, page_num, table_num;
-    volatile paddr_t phys_base_addr;
-    volatile vaddr_t vbase_addr;
+    int i, count, addr_increment, page_num, table_num;
+    volatile paddr_t phys_curr_addr;
+    volatile vaddr_t virt_curr_addr;
 
     ptr = (coarse_t*) pd;
     count = size / 4096; // 256 obv
-    addr_offset = 4096;
-    phys_base_addr = phys; // 1:1 for now, change this later
+    addr_increment = 4096;
+    phys_curr_addr = phys; // 1:1 for now, change this later
+    virt_curr_addr = virt;
 
     for (i = 0; i < count; ++i) {
-        vbase_addr = virt + i * 4096;
-        table_num = vbase_addr / 0x100000;
-        page_num = (vbase_addr & 0xFF000) >> 12;
+        table_num = virt_curr_addr / 0x100000;
+        page_num = (virt_curr_addr & 0xFF000) >> 12;
 
-        entry = phys_base_addr & 0xFFFFF000;
+        entry = phys_curr_addr & 0xFFFFF000;
         entry |= 0x11; // small page number
         entry |= 0x30;// AP = 3
 
         (*(ptr + table_num)).small[page_num] = entry;
 
-        phys_base_addr += addr_offset;
+        phys_curr_addr += addr_increment;
+        virt_curr_addr += addr_increment;
     }
 }
 
@@ -216,8 +217,8 @@ int platforminit( void )
     //    tlb_l1.entries[i].base = i;
     //}
 
+    static coarse_t l2[MAX_SIZE];// __attribute__ ((aligned(0x400)));
     static pde_t master[MAX_SIZE] __attribute__ ((aligned(0x4000)));
-    static coarse_t l2[MAX_SIZE] __attribute__ ((aligned(0x400)));
     volatile pde_t entry;
     int j;
 
@@ -227,7 +228,7 @@ int platforminit( void )
     //}
 
     for (j = 0; j < MAX_SIZE; ++j) {
-        entry = (((uint)l2 + (uint)j*1024) & 0xFFFFFC00);
+        entry = ((uint)&l2[j]) & 0xFFFFFC00;
         entry |= 0x1;
         init_table(l2, j << 20, j << 20, 0x100000);
         master[j] = entry;
