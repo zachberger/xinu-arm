@@ -13,7 +13,8 @@
 #ifndef _XINU_STDINT_H
 #define _XINU_STDINT_H
 
-typedef unsigned int intptr_t;
+typedef unsigned int uintptr_t;
+typedef int intptr_t;
 
 typedef unsigned int size_t;
 

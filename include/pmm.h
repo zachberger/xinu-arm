@@ -34,11 +34,11 @@ void pmm_init(void* memheap, void* pmmstart);
  *
  * return - physical address to a new frame, or NULL if out of memory.
  */
-intptr_t pmm_alloc_frame(void);
+uintptr_t pmm_alloc_frame(void);
 
 /**
  * Free a previously allocated frame.
  */
-void pmm_free_frame(intptr_t frame);
+void pmm_free_frame(uintptr_t frame);
 
 

@@ -17,7 +17,7 @@
 /** context record size in words */
 #define CONTEXT_WORDS (14)
 /** context record size in bytes       */
-#define CONTEXT (CONTEXT_WORDS * sizeof(intptr_t))
+#define CONTEXT (CONTEXT_WORDS * sizeof(uintptr_t))
 
 static int thrnew(void);
 
@@ -34,12 +34,12 @@ tid_typ create(void *procaddr, uint ssize, int priority,
                char *name, int nargs, ...)
 {
     register struct thrent *thrptr;     /* thread control block  */
-    intptr_t *saddr;               /* stack address                      */
-    intptr_t *savargs;             /* pointer to arg saving region       */
+    uintptr_t *saddr;               /* stack address                      */
+    uintptr_t *savargs;             /* pointer to arg saving region       */
     tid_typ tid;                /* stores new thread id               */
     va_list ap;                 /* points to list of var args         */
     int pads;                   /* padding entries in record.         */
-    intptr_t i;
+    uintptr_t i;
     void INITRET(void);
     irqmask im;
 
@@ -84,7 +84,7 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     *saddr = STACKMAGIC;
     *--saddr = tid;
     *--saddr = thrptr->stklen;
-    *--saddr = (intptr_t)thrptr->stkbase - thrptr->stklen + sizeof(intptr_t); /* max stack addr */
+    *--saddr = (uintptr_t)thrptr->stkbase - thrptr->stklen + sizeof(uintptr_t); /* max stack addr */
 
 
     if (0 == nargs)
@@ -119,22 +119,22 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     thrptr->stkptr = saddr;
 
     /* address of thread entry point  */
-    saddr[CONTEXT_WORDS - 1] = (intptr_t)procaddr;
+    saddr[CONTEXT_WORDS - 1] = (uintptr_t)procaddr;
     /*
      * Store the process's (where to jump to if the procaddr function returns)
      * return address value
      */
-    saddr[CONTEXT_WORDS - 2] = (intptr_t)INITRET;
+    saddr[CONTEXT_WORDS - 2] = (uintptr_t)INITRET;
 
     /* place arguments into activation record */
     va_start(ap, nargs);
     for (i = 0; i < 4 && i < nargs; i++)
     {
-        saddr[CONTEXT_WORDS - 6 + i] = va_arg(ap, intptr_t);
+        saddr[CONTEXT_WORDS - 6 + i] = va_arg(ap, uintptr_t);
     }
     for (; i < nargs; i++)
     {
-        savargs[i - 4] = va_arg(ap, intptr_t);
+        savargs[i - 4] = va_arg(ap, uintptr_t);
     }
     va_end(ap);
 

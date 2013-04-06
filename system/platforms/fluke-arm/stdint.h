@@ -10,7 +10,8 @@
 #ifndef _XINU_STDINT_H
 #define _XINU_STDINT_H
 
-typedef unsigned int intptr_t;
+typedef unsigned int uintptr_t;
+typedef int intptr_t;
 
 typedef unsigned char uint8_t;
 typedef char int8_t;

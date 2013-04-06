@@ -30,7 +30,7 @@ size_t pmm_mem_reqs(size_t heapSize) {
 }
 
 void pmm_init(void* memheap, void* pmmstart) {
-    _alignedHeapStart = PMM_ALIGN_ADDR((intptr_t)memheap);
+    _alignedHeapStart = PMM_ALIGN_ADDR((uintptr_t)memheap);
     _bitmap = pmmstart;
 
     // Zero out the bitmap
@@ -40,7 +40,7 @@ void pmm_init(void* memheap, void* pmmstart) {
     }
 }
 
-intptr_t pmm_alloc_frame() {
+uintptr_t pmm_alloc_frame() {
     size_t i;
     size_t bit;
 
@@ -55,7 +55,7 @@ intptr_t pmm_alloc_frame() {
                 if ((entry & (1 << bit)) == 0) {
                     _firstFreeFrameIndex = i;
                     _bitmap[i] = entry | (1 << bit);
-                    return (intptr_t)(_alignedHeapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
+                    return (uintptr_t)(_alignedHeapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
                 }
             }
         }
@@ -64,8 +64,8 @@ intptr_t pmm_alloc_frame() {
     return NULL;
 }
 
-void pmm_free_frame(intptr_t frame) {
-    intptr_t absoluteAddress = frame - ((intptr_t)_alignedHeapStart); 
+void pmm_free_frame(uintptr_t frame) {
+    uintptr_t absoluteAddress = frame - ((uintptr_t)_alignedHeapStart); 
     int frameNum = absoluteAddress / PMM_FRAME_SIZE;
     int numBitsInEntry = sizeof(_bitmap) * 8;
     int bitmapIndex = frameNum / numBitsInEntry;

@@ -19,7 +19,7 @@
  * in a context; it is saved in a '(struct thrent)->stkptr'). */
 #define CONTEXT_WORDS (15)
 /** context record size in bytes       */
-#define CONTEXT (CONTEXT_WORDS * sizeof(intptr_t))
+#define CONTEXT (CONTEXT_WORDS * sizeof(uintptr_t))
 
 static int thrnew(void);
 
@@ -36,8 +36,8 @@ tid_typ create(void *procaddr, uint ssize, int priority,
                char *name, int nargs, ...)
 {
     register struct thrent *thrptr;     /* thread control block  */
-    intptr_t *saddr;               /* stack address                      */
-    intptr_t *savargs;             /* pointer to arg saving region       */
+    uintptr_t *saddr;               /* stack address                      */
+    uintptr_t *savargs;             /* pointer to arg saving region       */
     tid_typ tid;                /* stores new thread id               */
     va_list ap;                 /* points to list of var args         */
     int pads;                   /* padding entries in record.         */
@@ -93,7 +93,7 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     *saddr = STACKMAGIC;
     *--saddr = tid;
     *--saddr = thrptr->stklen;
-    *--saddr = (intptr_t)thrptr->stkbase - thrptr->stklen + sizeof(intptr_t); /* max stack addr */
+    *--saddr = (uintptr_t)thrptr->stkbase - thrptr->stklen + sizeof(uintptr_t); /* max stack addr */
 
 
     if (0 == nargs)
@@ -128,12 +128,12 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     thrptr->stkptr = saddr;
 
     /* address of thread entry point  */
-    saddr[CONTEXT_WORDS - 1] = (intptr_t)procaddr;
+    saddr[CONTEXT_WORDS - 1] = (uintptr_t)procaddr;
     /*
      * Store the process's (where to jump to if the procaddr function returns)
      * return address value
      */
-    saddr[CONTEXT_WORDS - 2] = (intptr_t)INITRET;
+    saddr[CONTEXT_WORDS - 2] = (uintptr_t)INITRET;
 
     /*
      * Pass arguments to new processes.
@@ -148,12 +148,12 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     /* Store the first four arguments in the first 4 registers */
     for( i = 0; i < 4 && i < nargs; i++ )
     {
-        saddr[i] = va_arg(ap, intptr_t);
+        saddr[i] = va_arg(ap, uintptr_t);
     }
     /* Store the remaining arguments on the stack */
     for( i = 4; i < nargs; i++ )
     {
-        *savargs++ = va_arg(ap, intptr_t);
+        *savargs++ = va_arg(ap, uintptr_t);
     }
     va_end(ap);
 
