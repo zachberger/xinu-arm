@@ -50,6 +50,8 @@ void init_table(coarse_t *pd, vaddr_t virt, paddr_t phys, int size) {
     virt_curr_addr = virt;
 
     for (i = 0; i < count; ++i) {
+        // A course page table can map 1 MB, so
+        // divide by 1 MB to calculate the correct table
         table_num = virt_curr_addr / 0x100000;
         page_num = (virt_curr_addr & 0xFF000) >> 12;
 
@@ -59,17 +61,10 @@ void init_table(coarse_t *pd, vaddr_t virt, paddr_t phys, int size) {
 
         (*(ptr + table_num)).small[page_num] = entry;
 
+        // increment by 4kb
         phys_curr_addr += addr_increment;
         virt_curr_addr += addr_increment;
     }
-}
-
-void set_page_mapping(pde_t *pd, vaddr_t virt, paddr_t phys) {
-    // REMOVE{
-    pd[virt >> 20] |= phys & 0xFFF00000;
-    pd[virt >> 20] |= 0x02; // section entry number
-    pd[virt >> 20] |= 0x10; // execute never
-    pd[virt >> 20] |= 0xC00; // AP = 3
 }
 
 /**
@@ -118,114 +113,10 @@ int platforminit( void )
     //platform.uart_dll = 1337 /*Divisor Latch Low Byte, not useful?*/ /** \todo fixme */;
     //platform.uart_irqnum = 0; /*UART IRQ number? Not read anywhere.*/
 
-    typedef struct __attribute__ ((__packed__)) {
-        union {
-            struct {
-                unsigned start  : 3;
-                unsigned ns     : 2;
-                unsigned domain : 4;
-                unsigned p      : 1;
-                unsigned addr   : 22;
-            };
-            uint32_t value;
-        };
-    } coarse_descriptor;
-
-    typedef struct __attribute__ ((__packed__)) {
-        unsigned xn   : 1;
-        unsigned one  : 1;
-        unsigned b    : 1;
-        unsigned c    : 1;
-        unsigned ap   : 2;
-        unsigned tex  : 3;
-        unsigned apx  : 1;
-        unsigned s    : 1;
-        unsigned ng   : 1;
-        unsigned addr : 20;
-    } small_page_descriptor;
-
-    typedef struct {
-        coarse_descriptor descriptors[4096];
-    } l1_table;
-
-    typedef struct {
-        small_page_descriptor ptes[256];
-    } l2_table;
-
-    //static l1_table master __attribute__ ((aligned(0x4000)));
-    //static l2_table tables[4096] __attribute__ ((aligned(0x4000)));
-
-    /*int coarse, entry;
-    intptr_t currentAddress = 0x0;
-    for (coarse = 0; coarse < 4096; ++coarse) {
-        l2_table *l2 = &tables[i];
-        master.descriptors[coarse].start = 1;
-        master.descriptors[coarse].ns = 0;
-        master.descriptors[coarse].domain = 0;
-        master.descriptors[coarse].p = 0;
-        master.descriptors[coarse].addr = ((intptr_t)l2) >> 10;
-        for (entry = 0; entry < 256; ++entry) {
-            l2->ptes[entry].xn = 1;  
-            l2->ptes[entry].one = 1;  
-            l2->ptes[entry].b = 0;  
-            l2->ptes[entry].c = 0;  
-            l2->ptes[entry].ap = 0;  // kernel read/write ? 
-            l2->ptes[entry].tex = 0;  
-            l2->ptes[entry].apx = 0;  
-            l2->ptes[entry].s = 0;
-            l2->ptes[entry].ng = 0;  
-            l2->ptes[entry].addr = ((intptr_t)l2) >> 12;
-            currentAddress += 0x4000;
-        }
-    }*/
-
-    //static struct __attribute__ ((__packed__)) {
-    //    struct __attribute__ ((__packed__)) {
-    //        unsigned zero : 1;
-    //        unsigned one  : 1;
-    //        unsigned b    : 1;
-    //        unsigned c    : 1;
-    //        unsigned xn   : 1;
-    //        unsigned ign0 : 4;
-    //        unsigned imp  : 1;
-    //        unsigned ap   : 2;
-    //        unsigned tex  : 3;
-    //        unsigned apx  : 1;
-    //        unsigned s    : 1;
-    //        unsigned nG   : 1;
-    //        unsigned zero2: 1;
-    //        unsigned ns   : 1;
-    //        unsigned base : 12;
-    //    } entries[4096];
-    //} tlb_l1 __attribute__ ((aligned(0x4000))); // 16 KB aligned
-
-    //for (i = 0; i < 4096; ++i) {
-    //    tlb_l1.entries[i].zero = 0; //
-    //    tlb_l1.entries[i].one = 1;  //
-    //    tlb_l1.entries[i].b = 0;    //
-    //    tlb_l1.entries[i].c = 0;    //
-    //    tlb_l1.entries[i].xn = 1;   //
-    //    tlb_l1.entries[i].ign0 = 0; // 
-    //    tlb_l1.entries[i].imp = 0;  // 
-    //    tlb_l1.entries[i].ap = 0;   //
-    //    tlb_l1.entries[i].tex = 0;  // 
-    //    tlb_l1.entries[i].apx = 0;  //
-    //    tlb_l1.entries[i].s = 0;    //
-    //    tlb_l1.entries[i].nG = 0;   // 
-    //    tlb_l1.entries[i].zero2 = 0;//
-    //    tlb_l1.entries[i].ns = 0;   //
-    //    tlb_l1.entries[i].base = i;
-    //}
-
     static coarse_t l2[MAX_SIZE];// __attribute__ ((aligned(0x400)));
     static pde_t master[MAX_SIZE] __attribute__ ((aligned(0x4000)));
     volatile pde_t entry;
     int j;
-
-    // REMOVE: 1:1 section table
-    //for (j = 0; j < MAX_SIZE; ++j) {
-    //    set_page_mapping(master, j << 20, j << 20);
-    //}
 
     for (j = 0; j < MAX_SIZE; ++j) {
         entry = ((uint)&l2[j]) & 0xFFFFFC00;
