@@ -56,7 +56,7 @@ void init_table(coarse_t *pd, vaddr_t virt, paddr_t phys, int size) {
         page_num = (virt_curr_addr & 0xFF000) >> 12;
 
         entry = phys_curr_addr & 0xFFFFF000;
-        entry |= 0x11; // small page number
+        entry |= 0x3; // small page number
         entry |= 0x30;// AP = 3
 
         (*(ptr + table_num)).small[page_num] = entry;
