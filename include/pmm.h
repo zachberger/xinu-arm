@@ -11,6 +11,10 @@
 
 #define PMM_ALIGN_ADDR(addr) (void *)( ((PMM_FRAME_SIZE-1) + (ulong)(addr)) & ~(PMM_FRAME_SIZE-1) )
 
+
+struct pmm_t;
+typedef struct pmm_t pmm_t;
+
 /*
  * Calculate how much memory is needed by the PMM for it to keep track of free/alloced frames.
  *
@@ -19,7 +23,7 @@
  *
  * returns - how many bytes are need by the PMM.
  */
-size_t pmm_mem_reqs(size_t heapSize);
+size_t pmm_mem_reqs(pmm_t* pmm, size_t heapSize);
 
 /**
  * Initialize the physical memory manager.
@@ -27,18 +31,18 @@ size_t pmm_mem_reqs(size_t heapSize);
  * memheap - physical address to the start of the heap, as determined by the kernel initialization
  * pmmstart - the memory space the pmm can use to keep track of free/alloced frames (virtual address if MMU enabled). Must be at least pmm_mem_reqs() in size.
  */
-void pmm_init(void* memheap, void* pmmstart);
+void pmm_init(pmm_t* pmm, void* memheap, void* pmmstart);
 
 /**
  * Allocate one frame.
  *
  * return - physical address to a new frame, or NULL if out of memory.
  */
-uintptr_t pmm_alloc_frame(void);
+uintptr_t pmm_alloc_frame(pmm_t* pmm);
 
 /**
  * Free a previously allocated frame.
  */
-void pmm_free_frame(uintptr_t frame);
+void pmm_free_frame(pmm_t* pmm, uintptr_t frame);
 
 
