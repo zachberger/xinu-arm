@@ -12,7 +12,6 @@
 #define PMM_ALIGN_ADDR(addr) (void *)( ((PMM_FRAME_SIZE-1) + (ulong)(addr)) & ~(PMM_FRAME_SIZE-1) )
 
 
-struct pmm_t;
 typedef struct pmm_t pmm_t;
 
 /*
