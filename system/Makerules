@@ -18,7 +18,7 @@ C_FILES += clkinit.c clkhandler.c insertd.c sleep.c unsleep.c wakeup.c
 C_FILES += semcreate.c semfree.c semcount.c signal.c signaln.c wait.c
 
 # Files for memory management
-C_FILES += memget.c memfree.c stkget.c bfpalloc.c bfpfree.c bufget.c buffree.c
+C_FILES += memutils.c memget.c memfree.c stkget.c bfpalloc.c bfpfree.c bufget.c buffree.c
 
 # Files for interprocess communication
 C_FILES += send.c receive.c recvclr.c recvtime.c
