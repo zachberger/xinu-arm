@@ -99,7 +99,7 @@ void console_write(char *text)
 		/* Deal with control codes */
 		switch(ch)
 		{
-			case 1: fgcolour = 0b1111100000000000; continue;
+            case 1: fgcolour = 0b1111100000000000; continue;
 			case 2: fgcolour = 0b0000011111100000; continue;
 			case 3: fgcolour = 0b0000000000011111; continue;
 			case 4: fgcolour = 0b1111111111100000; continue;
@@ -108,7 +108,8 @@ void console_write(char *text)
 			case 7: fgcolour = 0b1111111111111111; continue;
 			case 8: fgcolour = 0b0000000000000000; continue;
 				/* Half brightness */
-			case 9: fgcolour = (fgcolour >> 1) & 0b0111101111101111; continue;
+			case 9:
+                console_write("     ");
 			case 10: newline(); continue;
 			case 11: /* Colour stack push */
 				if(colour_sp)
