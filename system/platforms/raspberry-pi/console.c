@@ -106,10 +106,14 @@ void console_write(char *text)
 			case 5: fgcolour = 0b1111100000011111; continue;
 			case 6: fgcolour = 0b0000011111111111; continue;
 			case 7: fgcolour = 0b1111111111111111; continue;
-			case 8: fgcolour = 0b0000000000000000; continue;
-				/* Half brightness */
+			case 8: 
+                consx--;
+                console_write(" ");
+                consx--;
+                return;
 			case 9:
                 console_write("     ");
+                return;
 			case 10: newline(); continue;
 			case 11: /* Colour stack push */
 				if(colour_sp)
