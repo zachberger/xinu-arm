@@ -248,7 +248,6 @@ void get_display_size(struct fb_info* info)
         fb_error();
         return;
     }
-
     w = buf[5];
     h = buf[6];
 
@@ -263,9 +262,26 @@ void get_display_size(struct fb_info* info)
         fb_error();
         return;
     }
-
     info->width = w;
     info->height = h;
+
+    buf[2] = 0x00040008;
+    buf[3] = 4;
+    buf[4] = 0;
+    buf[5] = 0;
+    buf[6] = 0;
+    buf[7] = 0;
+    
+    mailbox_write(MAIL_CHAN_ARMTOVC_PROP, (u32)buf);
+    mailbox_read(MAIL_CHAN_ARMTOVC_PROP);
+
+    if(buf[1]!=MAIL_PROP_RESPONSE_OK)
+    {
+        fb_error();
+        return;
+    }
+    info->pitch = buf[5];
+
 }
 
 void get_fb_info(struct fb_info* info)

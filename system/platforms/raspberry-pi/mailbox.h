@@ -11,6 +11,7 @@ struct fb_info
 {
     u32 width;
     u32 height;
+    u32 pitch;
     u32 fb_ptr;
     u32 fb_size;
 } __attribute__ ((aligned(16)));
