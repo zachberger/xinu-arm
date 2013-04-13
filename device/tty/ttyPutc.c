@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <device.h>
 #include <tty.h>
+#include <console.h>
 
 /**
  * Write a single character to a TTY.
@@ -50,7 +51,7 @@ devcall ttyPutc(device *devptr, char ch)
         }
         break;
     }
-
+    console_write(&ch);
     /* Write character to underlying device */
     return (*phw->putc) (phw, ch);
 }

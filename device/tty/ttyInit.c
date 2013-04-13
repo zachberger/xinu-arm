@@ -10,8 +10,10 @@
 #include <device.h>
 #include <tty.h>
 #include <stdlib.h>
+#include "../../system/platforms/raspberry-pi/mailbox.h"
 
 struct tty ttytab[NTTY];
+struct fb_info* fb;
 
 /**
  * Initialize TTY structures.
@@ -24,6 +26,6 @@ devcall ttyInit(device *devptr)
 
     ttyptr = &ttytab[devptr->minor];
     bzero(ttyptr, sizeof(struct tty));
-
+    fb = fb_init();
     return OK;
 }

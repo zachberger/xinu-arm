@@ -53,6 +53,7 @@ struct tty
 };
 
 extern struct tty ttytab[];
+extern struct fb_info* fb; 
 
 /* Driver functions */
 devcall ttyInit(device *);
