@@ -51,7 +51,9 @@ devcall ttyPutc(device *devptr, char ch)
         }
         break;
     }
-    console_write(&ch);
+    char* chrs = " \0";
+    chrs[0] = ch;
+    console_write(chrs);
     /* Write character to underlying device */
     return (*phw->putc) (phw, ch);
 }
