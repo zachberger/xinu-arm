@@ -1,0 +1,1 @@
+//Eric Warrington#ifndef FRAMEBUFFER_H#define FRAMEBUFFER_H#include "mbox.h"/* Use some free memory in the area below the kernel/stack */#define BUFFER_ADDRESS 0x1000struct fb_info{	u32 width;	u32 height;	u32 fb_ptr;	u32 fb_size;} __attribute__ ((aligned(16)));struct fb_info* fb_init();u32 fb_pitch();#endif
