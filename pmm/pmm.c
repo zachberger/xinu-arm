@@ -15,15 +15,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct pmm_t {
-    uint32_t* bitmap;            // Start of the bitmap
-    uint8_t* alignedHeapStart;   // Start of the heap from which to allocate frames
-    size_t memReqs;              // Size of the memory region (in # of bytes) that the pmm can
-                                 //  use for keeping track of frames.
-    size_t firstFreeFrameIndex;  // Keeps track of where the first unallocated frame is located
-                                 //  to alleviate the O(n) allocation time.
-};
-
 size_t pmm_mem_reqs(pmm_t* pmm, size_t heapSize) {
     size_t maxFrames = heapSize / PMM_FRAME_SIZE;
 
@@ -60,6 +51,46 @@ uintptr_t pmm_alloc_frame(pmm_t* pmm) {
                     pmm->bitmap[i] = entry | (1 << bit);
                     return (uintptr_t)(pmm->alignedHeapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
                 }
+            }
+        }
+    }
+
+    return NULL;
+}
+
+uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages) {
+    size_t i;
+    signed bit;
+
+    size_t entrySize = sizeof(pmm->bitmap);
+    size_t numberOfBitmapEntries = pmm->memReqs / entrySize;
+	size_t contigiousEntries = 0;
+    for (i = pmm->firstFreeFrameIndex; i < numberOfBitmapEntries; ++i) {
+        uint32_t entry = pmm->bitmap[i];
+
+        // I want to compare entry to the MAX_VAL(typeof(entry)), but we don't have that constant, so I just flip the bits and compare to 0.
+        if ((~entry) != 0) {
+            for (bit = 0; bit < (entrySize * 8); ++bit) {
+                if ((entry & (1 << bit)) == 0) {
+					contigiousEntries += 1;
+					if (contigiousEntries == num_pages) {
+	                    pmm->firstFreeFrameIndex = i;
+						int p;
+						for (p = 0; p < num_pages; ++p) {
+							pmm->bitmap[i] = entry | (1 << bit);
+							--bit;
+							if (bit == -1) {
+								bit = (entrySize * 8) - 1;
+								--entry;
+							}
+						}
+						
+	                    return (uintptr_t)(pmm->alignedHeapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
+					}
+                }
+				else {
+					contigiousEntries = 0;
+				}
             }
         }
     }

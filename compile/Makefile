@@ -4,6 +4,7 @@
 #  $Id: Makefile 2132 2009-11-17 23:22:38Z brylow $
 
 PLATFORM = raspberry-pi
+ARCH = arm
 
 DETAIL   = -DDETAIL
 

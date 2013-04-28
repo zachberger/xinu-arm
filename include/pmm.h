@@ -14,11 +14,19 @@
 
 typedef struct pmm_t pmm_t;
 
+struct pmm_t {
+    uint32_t* bitmap;            // Start of the bitmap
+    uint8_t* alignedHeapStart;   // Start of the heap from which to allocate frames
+    size_t memReqs;              // Size of the memory region (in # of bytes) that the pmm can
+                                 //  use for keeping track of frames.
+    size_t firstFreeFrameIndex;  // Keeps track of where the first unallocated frame is located
+                                 //  to alleviate the O(n) allocation time.
+};
+
 /*
  * Calculate how much memory is needed by the PMM for it to keep track of free/alloced frames.
  *
  * heapSize - the size (in # of bytes) of the heap from which frames can be allocated..
- *          - Note, that this API will have to change once frames can be swapped out to disk, as in that case there will be no max number of frames. Once this happens, the pmm will then need to be modified so that is allocates/maps memory as it needs it to keep track of frames.
  *
  * returns - how many bytes are need by the PMM.
  */
@@ -38,6 +46,13 @@ void pmm_init(pmm_t* pmm, void* memheap, void* pmmstart);
  * return - physical address to a new frame, or NULL if out of memory.
  */
 uintptr_t pmm_alloc_frame(pmm_t* pmm);
+
+/**
+ * Allocate a contigious set of frames.
+ *
+ * return - the physical address to the start of the contigious frames, or NULL if unable to find such a set.
+ */
+uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages);
 
 /**
  * Free a previously allocated frame.
