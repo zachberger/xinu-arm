@@ -19,19 +19,25 @@
 #define MMU_COARSE_TABLE_MAPPING_SIZE	(MMU_MASTER_ENTRY_COUNT * MMU_COARSE_ENTRY_COUNT * PMM_FRAME_SIZE) // 4096 mb
 
 #define MMU_MASTER_ENTRY_ADDR_MASK      0xFFFFFC00
-#define MMU_MASTER_ENTRY_ID             0x1
+#define MMU_SMALL_ENTRY_ADDR_MASK       0xFFFFF000
 
 #define MMU_SMALL_ENTRY_XN              1
 #define MMU_SMALL_ENTRY_BUFFERABLE      2
 #define MMU_SMALL_ENTRY_CACHEABLE       3
 #define MMU_SMALL_ENTRY_ACCESS_PERM     4
 #define MMU_SMALL_ENTRY_BASE_ADDR       5
+#define MMU_SMALL_ENTRY_ID              6
 
-#define MMU_ENTRY_BASE_ADDR             1
+#define MMU_COARSE_ENTRY_BASE_ADDR      1
+#define MMU_COARSE_ENTRY_ID             2
+
+#define MMU_PERMISSIONS_NANA            0
+#define MMU_PERMISSIONS_RWNA            1
+#define MMU_PERMISSIONS_RWRO            2
+#define MMU_PERMISSIONS_RWRW            3
+
 #define MMU_ENABLED                     1
 #define MMU_DISABLED                    0
-#define MMU_PERMISSIONS_KRW_URW         1
-#define MMU_PERMISSIONS_KRW_URW         1
 
 
 typedef uintptr_t vaddr_t;
@@ -52,26 +58,57 @@ typedef struct page_table_t {
 } page_table_t;
 
 /**
- * A vmm_t structure represent a virtual address space and the page table that maps that virtual address space.
+ * A vmm_t structure represents a virtual address space and the page table that maps that virtual address space.
  */
 typedef struct vmm_t {
     page_table_t page_table;
     pmm_t vaddr_space_mm;
 } vmm_t;
 
-void pde_coarse_set(pde_t entry, coarse_entry_opt_t option, coarse_entry_val_t value);
-void pde_small_set(small_entry_opt_t option, small_entry_val_t value);
-pde_t pde_coarse_get(coarse_entry_opt_t option);
-pde_t pde_small_get(small_entry_opt_t option);
+/**
+ * Modifies the given attribute of a coarse page descriptor entry
+ *
+ * entry  - a coarse page descriptor entry
+ * option - the requested attribute
+ * value  - the value of the attribute to set
+ */
+void pde_coarse_set(pde_t *entry, coarse_entry_opt_t option, coarse_entry_val_t value);
 
 /**
- * Initialize a page table structure. Setups the master table entries.
+ * Modifies the given attribute of a small page descriptor entry
+ * 
+ * entry  - a small page descriptor entry
+ * option - the requested attribute
+ * value  - the value of the attribute to set
+ */
+void pde_small_set(pde_t *entry, small_entry_opt_t option, small_entry_val_t value);
+
+/**
+ * Retrieves the given attribute of a coarse page descriptor entry
+ *
+ * entry   - a coarse page descriptor entry
+ * option  - the requested attribute
+ * returns - the value of the attribute
+ */
+coarse_entry_val_t pde_coarse_get(pde_t *entry, coarse_entry_opt_t option);
+
+/**
+ * Retrieves the given attribute of a small page descriptor entry
+ *
+ * entry   - a small page descriptor entry
+ * option  - the requested attribute
+ * returns - the value of the attribute
+ */
+small_entry_val_t pde_small_get(pde_t *entry, small_entry_opt_t option);
+
+/**
+ * Initialize a page table structure. Sets up the master table entries.
  *
  * page_table - the page table to initialize
  */
 void page_table_init(page_table_t* page_table);
 
-/*
+/**
  * Print the contents of a page table using kprintf.
  * 
  * page_table   - the page table dump
@@ -99,7 +136,7 @@ void page_table_map(page_table_t* table, paddr_t phys, vaddr_t virt);
 paddr_t page_table_unmap(page_table_t* table, vaddr_t virt);
 
 /**
- * Set the current virtual memory manager, updates the page table the MMU uses, and performs a tlb flush.
+ * Sets the current virtual memory manager, updates the page table the MMU uses, and performs a tlb flush.
  * 
  * new_vmm - the new virtual memory manager to installs
  */

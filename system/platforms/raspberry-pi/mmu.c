@@ -4,6 +4,58 @@
 static vmm_t* _current_page_table;
 static pmm_t* _phys_mm;
 
+void pde_coarse_set(pde_t *entry, coarse_entry_opt_t option, coarse_entry_val_t value) {
+    int shift = 0;
+    if (option == MMU_COARSE_ENTRY_BASE_ADDR) {
+        *entry |= value & MMU_MASTER_ENTRY_ADDR_MASK;
+    } else {
+        switch (option) {
+            case MMU_COARSE_ENTRY_ID: break;
+            default:                  return;
+        }
+        *entry |= value << shift;
+    }
+}
+
+void pde_small_set(pde_t *entry, small_entry_opt_t option, small_entry_val_t value) {
+    int shift = 0;
+    if (option == MMU_SMALL_ENTRY_BASE_ADDR) {
+        *entry |= value & MMU_SMALL_ENTRY_ADDR_MASK;
+    } else {
+        switch (option) {
+            case MMU_SMALL_ENTRY_XN:          break;
+            case MMU_SMALL_ENTRY_ID:          shift = 1; break;
+            case MMU_SMALL_ENTRY_BUFFERABLE:  shift = 2; break;
+            case MMU_SMALL_ENTRY_CACHEABLE:   shift = 3; break;
+            case MMU_SMALL_ENTRY_ACCESS_PERM: shift = 4; break;
+            default:                          return;
+        }
+        *entry |= value << shift;
+    }
+}
+
+coarse_entry_val_t pde_coarse_get(pde_t *entry, coarse_entry_opt_t option) {
+    int start = 0, offset = 0;
+    switch (option) {
+        case MMU_COARSE_ENTRY_BASE_ADDR: start = 10; offset = 22; break;
+        default:                         return *entry;
+    }
+    return (*entry >> start) & ((1 << offset) - 1);
+}
+
+small_entry_val_t pde_small_get(pde_t *entry, small_entry_opt_t option) {
+    int start = 0, offset = 0;
+    switch (option) {
+        case MMU_SMALL_ENTRY_XN:          start = 0; break;
+        case MMU_SMALL_ENTRY_BUFFERABLE:  start = 2; break;
+        case MMU_SMALL_ENTRY_CACHEABLE:   start = 3; break;
+        case MMU_SMALL_ENTRY_ACCESS_PERM: start = 4; offset = 2; break;
+        case MMU_SMALL_ENTRY_BASE_ADDR:   start = 12; offset = 20; break;
+        default:                          return *entry;
+    }
+    return (*entry >> start) & ((1 << offset) - 1);
+}
+
 static inline void _vaddr_to_table_page_nums(vaddr_t virt, size_t* table_num, size_t* page_num) {
     *table_num = virt / 0x100000;
     *page_num = (virt & 0xFF000) >> 12;
@@ -12,8 +64,9 @@ static inline void _vaddr_to_table_page_nums(vaddr_t virt, size_t* table_num, si
 void page_table_init(page_table_t* page_table) {
     int i;
     for (i = 0; i < MMU_MASTER_ENTRY_COUNT; ++i) {
-        pde_t entry = ((uint32_t)&(page_table->l2[i])) & MMU_MASTER_ENTRY_ADDR_MASK;
-        entry |= 0x1;
+        pde_t entry = 0;
+        pde_coarse_set(&entry, MMU_COARSE_ENTRY_BASE_ADDR, (uint32_t)&(page_table->l2[i]));
+        pde_coarse_set(&entry, MMU_COARSE_ENTRY_ID, 1);
         page_table->master[i] = entry;
     }
 }
@@ -36,11 +89,10 @@ void page_table_map(page_table_t* table, paddr_t phys, vaddr_t virt) {
     size_t table_num, page_num;
     // master_index = phys % MMU_COARSE_TABLE_MAPPING_SIZE;
     _vaddr_to_table_page_nums(virt, &table_num, &page_num);
-
-    size_t entry = phys & 0xFFFFF000;
-    entry |= 0x3;
-    entry |= 0x30;
-    
+    pde_t entry = 0;
+    pde_small_set(&entry, MMU_SMALL_ENTRY_ID, 1);
+    pde_small_set(&entry, MMU_SMALL_ENTRY_ACCESS_PERM, MMU_PERMISSIONS_RWRW);
+    pde_small_set(&entry, MMU_SMALL_ENTRY_BASE_ADDR, phys);
     (*(table->l2 + table_num)).small_entries[page_num] = entry;
 }
 
