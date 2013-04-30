@@ -16,7 +16,9 @@ typedef unsigned char uchar;    /**< unsigned char type                 */
 typedef unsigned short ushort;  /**< unsigned short type                */
 typedef unsigned int uint;      /**< unsigned int type                  */
 typedef unsigned long ulong;    /**< unsigned long type                 */
-typedef char bool;              /**< boolean type                       */
+#ifndef bool
+    typedef char bool;              /**< boolean type                       */
+#endif
 
 /* Function declaration return types */
 typedef int syscall;            /**< system call declaration            */
