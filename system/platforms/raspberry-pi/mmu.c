@@ -32,7 +32,7 @@ void page_table_ddump(page_table_t* page_table, size_t first_coarse, size_t num_
 	kprintf("=====================\r\npage_table_t debug dump end\r\n=====================\r\n");
 }
 
-void map(page_table_t* table, paddr_t phys, vaddr_t virt) {
+void page_table_map(page_table_t* table, paddr_t phys, vaddr_t virt) {
 	size_t table_num, page_num;
 	// master_index = phys % MMU_COARSE_TABLE_MAPPING_SIZE;
 	_vaddr_to_table_page_nums(virt, &table_num, &page_num);
@@ -44,20 +44,17 @@ void map(page_table_t* table, paddr_t phys, vaddr_t virt) {
     (*(table->l2 + table_num)).small_entries[page_num] = entry;
 }
 
-paddr_t unmap(page_table_t* table, vaddr_t virt) {
-// size_t table_num, page_num;
-// 	_vaddr_to_table_page_nums(virt, &table_num, &page_num);
-// 	
-// 	size_t entry = (*_get_coarse_table(tables, table_num)).small_entries[page_num];
-// 	paddr_t phys_addr = entry & 0xFFFFF000;
-// 	entry = 0; // TODO - validate that just setting to 0 is correct
-// 			   //	   - does this need a TLB flush also?
-//     (*(table->l2 + table_num)).small_entries[page_num] = entry;
-// 	
-// 	return phys_addr;
+paddr_t page_table_unmap(page_table_t* table, vaddr_t virt) {
+	size_t table_num, page_num;
+	_vaddr_to_table_page_nums(virt, &table_num, &page_num);
 	
-	// TODO !
-	return 0;
+	size_t entry = (*(table->l2 + table_num)).small_entries[page_num];
+	paddr_t phys_addr = entry & 0xFFFFF000;
+	entry = 0; // TODO - validate that just setting to 0 is correct
+			   //	   - does this need a TLB flush also?
+    (*(table->l2 + table_num)).small_entries[page_num] = entry;
+	
+	return phys_addr;
 }
 
 void vmm_set_current(vmm_t* new_vmm) {
@@ -99,7 +96,7 @@ vaddr_t vmm_alloc_n(size_t num_pages, bool* out_failed) {
 			}
 			
 			// map the physical frame to the virtual address
-			map(&(_current_page_table->page_table), phys_addr, curr_vaddr);
+			page_table_map(&(_current_page_table->page_table), phys_addr, curr_vaddr);
 			curr_vaddr += PMM_FRAME_SIZE;
 		}
 	}
@@ -110,7 +107,7 @@ vaddr_t vmm_alloc_n(size_t num_pages, bool* out_failed) {
 void vmm_free(vaddr_t vaddr, size_t num_pages) {
 	int i;
 	for (i = 0; i < num_pages; ++i, vaddr += PMM_FRAME_SIZE) {
-		paddr_t phys_addr = unmap(&(_current_page_table->page_table), vaddr);
+		paddr_t phys_addr = page_table_unmap(&(_current_page_table->page_table), vaddr);
 		pmm_free_frame(&(_current_page_table->vaddr_space_mm), vaddr);
 		pmm_free_frame(_phys_mm, phys_addr);
 	}
