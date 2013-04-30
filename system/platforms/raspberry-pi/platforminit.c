@@ -11,16 +11,10 @@
 #include <string.h>
 #include "vic.h"
 #include "gpio.h"
+#include "mmu.h"
 
-#define MAX_SIZE 4096
-
-typedef unsigned long vaddr_t;
-typedef unsigned long paddr_t;
-typedef unsigned long pde_t;
-
-typedef struct coarse {
-    pde_t small[256];
-} coarse_t;
+static vmm_t vmm;
+static pmm_t pmm;
 
 extern ulong cpuid;                     /* Processor id                    */
 extern struct platform platform;        /* Platform specific configuration */
@@ -28,44 +22,6 @@ extern struct platform platform;        /* Platform specific configuration */
 //NOTE on the Raspberry Pi, we rely on the GPU to have initialized the PL011
 //properly so that we can do kprintf since we don't actually initialize it
 //until the latter part of sysinit()
-
-void dump_table(pde_t *table, int start, int end) {
-    int i;
-    for (i = start; i < end; ++i) {
-        kprintf("%0d: %x\r\n", i, table[i]);
-    }
-}
-
-void init_table(coarse_t *pd, vaddr_t virt, paddr_t phys, int size) {
-    volatile coarse_t *ptr; 
-    volatile pde_t entry;
-    int i, count, addr_increment, page_num, table_num;
-    volatile paddr_t phys_curr_addr;
-    volatile vaddr_t virt_curr_addr;
-
-    ptr = (coarse_t*) pd;
-    count = size / 4096; // 256 obv
-    addr_increment = 4096;
-    phys_curr_addr = phys; // 1:1 for now, change this later
-    virt_curr_addr = virt;
-
-    for (i = 0; i < count; ++i) {
-        // A course page table can map 1 MB, so
-        // divide by 1 MB to calculate the correct table
-        table_num = virt_curr_addr / 0x100000;
-        page_num = (virt_curr_addr & 0xFF000) >> 12;
-
-        entry = phys_curr_addr & 0xFFFFF000;
-        entry |= 0x3; // small page number
-        entry |= 0x30;// AP = 3
-
-        (*(ptr + table_num)).small[page_num] = entry;
-
-        // increment by 4kb
-        phys_curr_addr += addr_increment;
-        virt_curr_addr += addr_increment;
-    }
-}
 
 /**
  * Determines and stores all platform specific information.
@@ -112,21 +68,33 @@ int platforminit( void )
     platform.clkfreq = 1000000 /*we have a 1Mhz input clock to the system timer*/ /** \todo dynamically determine? */;
     //platform.uart_dll = 1337 /*Divisor Latch Low Byte, not useful?*/ /** \todo fixme */;
     //platform.uart_irqnum = 0; /*UART IRQ number? Not read anywhere.*/
+	
+	kprintf("Starting MMU initialization\r\n");
+	page_table_init(&(vmm.page_table));
+	size_t const kPagesIn4GB = 1048576;
+	uint64_t const kBytesin4GB = kPagesIn4GB * 4096ull;
+//	kprintf("kBytesin4GB: %d\r\n", kBytesin4GB);
+	size_t vmmStorageSize = pmm_mem_reqs(&(vmm.vaddr_space_mm), kBytesin4GB);
+	size_t pmmStorageSize = pmm_mem_reqs(&pmm, kBytesin4GB);
 
-    static coarse_t l2[MAX_SIZE];// __attribute__ ((aligned(0x400)));
-    static pde_t master[MAX_SIZE] __attribute__ ((aligned(0x4000)));
-    volatile pde_t entry;
-    int j;
+	uint8_t* vmmStorage    = memheap;
+	memheap += vmmStorageSize;
+	_end    += vmmStorageSize;
+	uint8_t* pmmStorage    = memheap;
+	memheap += pmmStorageSize;
+	_end    += pmmStorageSize;
 
-    for (j = 0; j < MAX_SIZE; ++j) {
-        entry = ((uint)&l2[j]) & 0xFFFFFC00;
-        entry |= 0x1;
-        init_table(l2, j << 20, j << 20, 0x100000);
-        master[j] = entry;
-    }
+	pmm_init(&(vmm.vaddr_space_mm), 0x0, vmmStorage);
+	pmm_init(&pmm, 0x0, pmmStorage);
+	vmm_set_phys_mm(&pmm);
+	vmm_set_current(&vmm);
+	
+	bool failed = false;
+	vaddr_t vaddr = vmm_alloc_n(kPagesIn4GB, &failed); // allocate
+	if (failed) kprintf("vmm_alloc_n failed!\n");
 
     // REMOVE: debug
-    dump_table(master, 0, 20);
+	// page_table_ddump(&(vmm.page_table), 0, 1);
     
     // REMOVE: coarse table at first 1 MB of master
     //init_table(l2, 0, 0, 0x100000);
@@ -134,7 +102,7 @@ int platforminit( void )
     //master[0] |= 0x1;
 
     //uint tlb_l1_base = (uint)&master;
-    asm("mcr p15, 0, %0, c2, c0, 0" : : "r" (master) : "memory");
+    // asm("mcr p15, 0, %0, c2, c0, 0" : : "r" (master) : "memory");
 
     // domain AP: "manager" (AP not checked)
     asm("mov r0, #0x3");
@@ -144,6 +112,7 @@ int platforminit( void )
     asm("mrc p15, 0, r0, c1, c0, 0");
     asm("orr r0, r0, #0x1");
     asm("mcr p15, 0, r0, c1, c0, 0");
+	kprintf("MMU enabled.\r\n");
     
     return OK;
 }

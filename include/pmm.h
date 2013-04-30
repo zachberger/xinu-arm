@@ -5,7 +5,11 @@
  * Date: March 26, 2013
  **/
 
+#ifndef PMM_PMM_H
+#define PMM_PMM_H
+
 #include <stdint.h>
+#include <stdbool.h>
 
 #define PMM_FRAME_SIZE 4096
 
@@ -16,7 +20,7 @@ typedef struct pmm_t pmm_t;
 
 struct pmm_t {
     uint32_t* bitmap;            // Start of the bitmap
-    uint8_t* alignedHeapStart;   // Start of the heap from which to allocate frames
+    uint8_t* heapStart;		     // Start of the heap from which to allocate frames
     size_t memReqs;              // Size of the memory region (in # of bytes) that the pmm can
                                  //  use for keeping track of frames.
     size_t firstFreeFrameIndex;  // Keeps track of where the first unallocated frame is located
@@ -30,7 +34,7 @@ struct pmm_t {
  *
  * returns - how many bytes are need by the PMM.
  */
-size_t pmm_mem_reqs(pmm_t* pmm, size_t heapSize);
+size_t pmm_mem_reqs(pmm_t* pmm, uint64_t heapSize);
 
 /**
  * Initialize the physical memory manager.
@@ -45,18 +49,19 @@ void pmm_init(pmm_t* pmm, void* memheap, void* pmmstart);
  *
  * return - physical address to a new frame, or NULL if out of memory.
  */
-uintptr_t pmm_alloc_frame(pmm_t* pmm);
+uintptr_t pmm_alloc_frame(pmm_t* pmm, bool* out_failed);
 
 /**
  * Allocate a contigious set of frames.
  *
  * return - the physical address to the start of the contigious frames, or NULL if unable to find such a set.
  */
-uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages);
+uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages, bool* out_failed);
 
 /**
  * Free a previously allocated frame.
  */
 void pmm_free_frame(pmm_t* pmm, uintptr_t frame);
 
+#endif // PMM_PMM_H
 
