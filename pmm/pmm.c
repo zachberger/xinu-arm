@@ -49,62 +49,62 @@ uintptr_t pmm_alloc_frame(pmm_t* pmm, bool* out_failed) {
                 if ((entry & (1 << bit)) == 0) {
                     pmm->firstFreeFrameIndex = i;
                     pmm->bitmap[i] = entry | (1 << bit);
-					if (out_failed) *out_failed = false;
+                    if (out_failed) *out_failed = false;
                     return (uintptr_t)(pmm->heapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
                 }
             }
         }
     }
-	
-	if (out_failed) *out_failed = true;
+    
+    if (out_failed) *out_failed = true;
     return NULL;
 }
 
-uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages, bool* out_failed) {	
+uintptr_t pmm_alloc_frames(pmm_t* pmm, size_t num_pages, bool* out_failed) {    
     size_t i;
     signed bit;
 
     size_t entrySize = sizeof(pmm->bitmap);
     size_t numberOfBitmapEntries = pmm->memReqs / entrySize;
-	size_t contigiousEntries = 0;
-		
+    size_t contigiousEntries = 0;
+        
     for (i = pmm->firstFreeFrameIndex; i < numberOfBitmapEntries; ++i) {
-		//kprintf("Checking bitmap entry %d\r\n", i);
+        //kprintf("Checking bitmap entry %d\r\n", i);
         uint32_t entry = pmm->bitmap[i];
 
         // I want to compare entry to the MAX_VAL(typeof(entry)), but we don't have that constant, so I just flip the bits and compare to 0.
         if ((~entry) != 0) {
-			//kprintf("Found an entry with free frames.\r\n");
+            //kprintf("Found an entry with free frames.\r\n");
             for (bit = 0; bit < (entrySize * 8); ++bit) {
                 if ((entry & (1 << bit)) == 0) {
-					contigiousEntries += 1;
-					//kprintf("Incremented contigiousEntries to %d\r\n", contigiousEntries);
-					if (contigiousEntries == num_pages) {
-	                    pmm->firstFreeFrameIndex = i;
-						int p;
-						for (p = 0; p < num_pages; ++p) {
-							pmm->bitmap[i] = entry | (1 << bit);
-							--bit;
-							// don't decrement after the last page, else i becomes one less than it should be.
-							if (bit == -1 && p != (num_pages - 1)) {
-								bit = (entrySize * 8) - 1;
-								entry = pmm->bitmap[--i];
-							}
-						}
-						
-						bit += 1; // bit will go one past where it's suppose to be.
-                    	if (out_failed) *out_failed = false;
-						return (uintptr_t)(pmm->heapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
-					}
+                    contigiousEntries += 1;
+                    //kprintf("Incremented contigiousEntries to %d\r\n", contigiousEntries);
+                    if (contigiousEntries == num_pages) {
+                        pmm->firstFreeFrameIndex = i;
+                        int p;
+                        for (p = 0; p < num_pages; ++p) {
+                            pmm->bitmap[i] = entry | (1 << bit);
+                            --bit;
+                            // don't decrement after the last page, else i becomes one less than it should be.
+                            if (bit == -1 && p != (num_pages - 1)) {
+                                bit = (entrySize * 8) - 1;
+                                entry = pmm->bitmap[--i];
+                            }
+                        }
+                        
+                        bit += 1; // bit will go one past where it's suppose to be.
+                        if (out_failed) *out_failed = false;
+                        return (uintptr_t)(pmm->heapStart + (((i * entrySize * 8) + bit) * PMM_FRAME_SIZE));
+                    }
                 }
-				else {
-					contigiousEntries = 0;
-				}
+                else {
+                    contigiousEntries = 0;
+                }
             }
         }
     }
 
-	if (out_failed) *out_failed = true;
+    if (out_failed) *out_failed = true;
     return NULL;
 }
 
