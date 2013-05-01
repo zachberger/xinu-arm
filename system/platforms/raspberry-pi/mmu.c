@@ -61,16 +61,6 @@ static inline void _vaddr_to_table_page_nums(vaddr_t virt, size_t* table_num, si
     *page_num = (virt & 0xFF000) >> 12;
 }
 
-void page_table_init(page_table_t* page_table) {
-    int i;
-    for (i = 0; i < MMU_MASTER_ENTRY_COUNT; ++i) {
-        pde_t entry = 0;
-        pde_coarse_set(&entry, MMU_COARSE_ENTRY_BASE_ADDR, (uint32_t)&(page_table->l2[i]));
-        pde_coarse_set(&entry, MMU_COARSE_ENTRY_ID, 1);
-        page_table->master[i] = entry;
-    }
-}
-
 void page_table_ddump(page_table_t* page_table, size_t first_coarse, size_t num_coarses) {
     kprintf("=====================\r\npage_table_t debug dump start\r\n=====================\r\n");
     int i;
@@ -87,7 +77,15 @@ void page_table_ddump(page_table_t* page_table, size_t first_coarse, size_t num_
 
 void page_table_map(page_table_t* table, paddr_t phys, vaddr_t virt) {
     size_t table_num, page_num;
-    // master_index = phys % MMU_COARSE_TABLE_MAPPING_SIZE;
+    size_t master_index = phys / MMU_COARSE_TABLE_MAPPING_SIZE;
+    
+    if (table->master[master_index] == 0) {
+        pde_t entry = 0;
+        pde_coarse_set(&entry, MMU_COARSE_ENTRY_BASE_ADDR, (uint32_t)&(table->l2[master_index]));
+        pde_coarse_set(&entry, MMU_COARSE_ENTRY_ID, 1);
+        table->master[master_index] = entry;
+    }
+    
     _vaddr_to_table_page_nums(virt, &table_num, &page_num);
     pde_t entry = 0;
     pde_small_set(&entry, MMU_SMALL_ENTRY_ID, 1);
@@ -97,14 +95,32 @@ void page_table_map(page_table_t* table, paddr_t phys, vaddr_t virt) {
 }
 
 paddr_t page_table_unmap(page_table_t* table, vaddr_t virt) {
+    int i;
+    size_t master_index; 
+    bool all_zero = true;
+    coarse_table_t *coarse = NULL;
     size_t table_num, page_num;
+    
+    coarse = table->l2 + table_num;
     _vaddr_to_table_page_nums(virt, &table_num, &page_num);
     
-    size_t entry = (*(table->l2 + table_num)).small_entries[page_num];
-    paddr_t phys_addr = entry & 0xFFFFF000;
-    entry = 0; // TODO - validate that just setting to 0 is correct
-               //      - does this need a TLB flush also?
-    (*(table->l2 + table_num)).small_entries[page_num] = entry;
+    size_t entry = coarse->small_entries[page_num];
+    paddr_t phys_addr = entry & MMU_SMALL_ENTRY_ADDR_MASK;
+    // TODO - validate that just setting to 0 is correct
+    //      - does this need a TLB flush also?
+    coarse->small_entries[page_num] = entry;
+
+    for (i = 0; i < MMU_COARSE_ENTRY_COUNT; ++i) {
+        if (coarse->small_entries[i] != 0) {
+            all_zero = false;
+            break;
+        }
+    }
+
+    if (all_zero) {
+        master_index = phys_addr / MMU_COARSE_TABLE_MAPPING_SIZE;
+        table->master[master_index] = 0;
+    }
     
     return phys_addr;
 }

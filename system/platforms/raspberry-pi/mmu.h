@@ -16,7 +16,7 @@
 #define MMU_MASTER_ENTRY_COUNT          4096
 #define MMU_COARSE_ENTRY_COUNT          256
 #define MMU_MASTER_ALIGNMENT            0x4000
-#define MMU_COARSE_TABLE_MAPPING_SIZE	(MMU_MASTER_ENTRY_COUNT * MMU_COARSE_ENTRY_COUNT * PMM_FRAME_SIZE) // 4096 mb
+#define MMU_COARSE_TABLE_MAPPING_SIZE   (MMU_COARSE_ENTRY_COUNT * PMM_FRAME_SIZE) // 4096 mb
 
 #define MMU_MASTER_ENTRY_ADDR_MASK      0xFFFFFC00
 #define MMU_SMALL_ENTRY_ADDR_MASK       0xFFFFF000
@@ -53,8 +53,8 @@ typedef struct coarse_table_t {
 } coarse_table_t;
 
 typedef struct page_table_t {
-	pde_t master[MMU_MASTER_ENTRY_COUNT] __attribute__ ((aligned(MMU_MASTER_ALIGNMENT)));
-	coarse_table_t l2[MMU_MASTER_ENTRY_COUNT];
+    pde_t master[MMU_MASTER_ENTRY_COUNT] __attribute__ ((aligned(MMU_MASTER_ALIGNMENT)));
+    coarse_table_t l2[MMU_MASTER_ENTRY_COUNT];
 } page_table_t;
 
 /**
@@ -100,13 +100,6 @@ coarse_entry_val_t pde_coarse_get(pde_t *entry, coarse_entry_opt_t option);
  * returns - the value of the attribute
  */
 small_entry_val_t pde_small_get(pde_t *entry, small_entry_opt_t option);
-
-/**
- * Initialize a page table structure. Sets up the master table entries.
- *
- * page_table - the page table to initialize
- */
-void page_table_init(page_table_t* page_table);
 
 /**
  * Print the contents of a page table using kprintf.
@@ -174,7 +167,7 @@ vaddr_t vmm_alloc_n(size_t num_pages, bool* out_failed);
 /**
  * Free num_pages of contigious virtual memory starting at vaddr. Unmaps the virtual addresses in the current virtual memory manager and returns the physical memory to the physical memory manager.
  *
- * vaddr 	 - the start of virtual memory to free.
+ * vaddr     - the start of virtual memory to free.
  * num_pages - the number of virtual pages to free.
  */
 void vmm_free(vaddr_t vaddr, size_t num_pages);
