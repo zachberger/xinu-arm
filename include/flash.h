@@ -11,6 +11,7 @@
 #include <device.h>
 #include <semaphore.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #ifndef _FLASH_H_
 #define _FLASH_H_

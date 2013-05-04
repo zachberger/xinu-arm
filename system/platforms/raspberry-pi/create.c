@@ -7,6 +7,7 @@
 #include <debug.h>
 #include <memory.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <thread.h>
@@ -71,8 +72,8 @@ tid_typ create(void *procaddr, uint ssize, int priority,
     strncpy(thrptr->name, name, TNMLEN);
     thrptr->parent = gettid();
     thrptr->hasmsg = FALSE;
-    thrptr->memlist.next = NULL;
-    thrptr->memlist.length = 0;
+    //thrptr->memlist.next = NULL;
+    //thrptr->memlist.length = 0;
 
     //TEB: this is hardcoded for ARM
     //This is to enable the timer interrupt

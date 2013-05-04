@@ -195,8 +195,8 @@ static int sysinit(void)
     thrptr->stkbase = (void *)&_end;
     thrptr->stklen = (ulong)memheap - (ulong)&_end;
     thrptr->stkptr = 0;
-    thrptr->memlist.next = NULL;
-    thrptr->memlist.length = 0;
+    //thrptr->memlist.next = NULL;
+    //thrptr->memlist.length = 0;
     thrcurrent = NULLTHREAD;
 
     kprintf("&_end is 0x%x\r\n", &_end);

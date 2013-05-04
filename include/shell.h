@@ -9,6 +9,7 @@
 #define _SHELL_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 
 /* Size contstants */
 #define SHELL_BUFLEN  80        /**< length of general buffer           */

@@ -11,6 +11,7 @@
 # include <device.h>
 # include <semaphore.h>
 # include <stddef.h>
+# include <stdbool.h>
 
 /* UART Buffer lengths */
 #define UART_IBLEN      1024

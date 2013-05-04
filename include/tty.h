@@ -11,6 +11,7 @@
 #include <device.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define TTY_IBLEN           1024 /**< input buffer length               */
 

@@ -1,5 +1,6 @@
 #include "bcm2835.h"
 #include "stddef.h"
+#include "stdbool.h"
 #include "interrupt.h"
 #include "vic.h"
 #include "conf.h"

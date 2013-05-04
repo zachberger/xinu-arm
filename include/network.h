@@ -9,6 +9,7 @@
 #define _NETWORK_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <conf.h>
 #include <ethernet.h>
 #include <string.h>
