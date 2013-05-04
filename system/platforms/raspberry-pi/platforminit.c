@@ -9,9 +9,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <vmm.h>
 #include "vic.h"
 #include "gpio.h"
-#include "mmu.h"
 
 static vmm_t vmm;
 static pmm_t pmm;

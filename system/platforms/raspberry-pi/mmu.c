@@ -1,4 +1,6 @@
 #include "mmu.h"
+#include "pmm.h"
+#include "vmm.h"
 #include <stddef.h>
 
 static vmm_t* _current_page_table;

@@ -30,7 +30,7 @@ DOCGEN   = doxygen
 
 # DETAIL   = -DDETAIL
 
-DEFS     =
+DEFS     = -D PLATFORM_RASPBERRY_PI
 INCLUDE  = -I../include -I../system/platforms/${PLATFORM}
 
 #flag for producing GDB debug information
