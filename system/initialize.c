@@ -59,6 +59,9 @@ ulong cpuid;                    /* Processor id                        */
 
 struct platform platform;       /* Platform specific configuration     */
 
+/* System physical memory manager */
+static pmm_t pmm;
+
 void programSwitch( void );
 
 /**
@@ -174,11 +177,11 @@ static int sysinit(void)
     /* Initialize free memory list */
     memheap = roundmb(memheap);
     platform.maxaddr = truncmb(platform.maxaddr);
-    kprintf("platform.maxaddr is 0x%x\r\n", platform.maxaddr);
-    memlist.next = pmblock = (struct memblock *)memheap;
-    memlist.length = (uint)(platform.maxaddr - memheap);
-    pmblock->next = NULL;
-    pmblock->length = (uint)(platform.maxaddr - memheap);
+    // kprintf("platform.maxaddr is 0x%x\r\n", platform.maxaddr);
+    // memlist.next = pmblock = (struct memblock *)memheap;
+    // memlist.length = (uint)(platform.maxaddr - memheap);
+    // pmblock->next = NULL;
+    // pmblock->length = (uint)(platform.maxaddr - memheap);
 
     /* Initialize thread table */
     for (i = 0; i < NTHREAD; i++)
@@ -195,9 +198,55 @@ static int sysinit(void)
     thrptr->stkbase = (void *)&_end;
     thrptr->stklen = (ulong)memheap - (ulong)&_end;
     thrptr->stkptr = 0;
-    //thrptr->memlist.next = NULL;
-    //thrptr->memlist.length = 0;
     thrcurrent = NULLTHREAD;
+    
+    kprintf("Starting MMU initialization\r\n");
+    size_t const kPagesIn4GB = 1048576;
+    uint64_t const kBytesin4GB = kPagesIn4GB * 4096ull;
+    size_t vmmStorageSize = pmm_mem_reqs(&(thrptr->vmm.vaddr_space_mm), kBytesin4GB);
+    size_t pmmStorageSize = pmm_mem_reqs(&pmm, kBytesin4GB/8); // TODO - instead of assuming 512 mb, query broadcom mailbox
+    uint8_t* vmmStorage    = memheap;
+    memheap += vmmStorageSize;
+    uint8_t* pmmStorage = memheap;
+    memheap += pmmStorageSize;
+
+    memset(thrptr->vmm.page_table.master, 0, sizeof(pde_t)*MMU_MASTER_ENTRY_COUNT);
+    pmm_init(&(thrptr->vmm.vaddr_space_mm), memheap, vmmStorage);
+    pmm_init(&pmm, 0x0, pmmStorage);
+    vmm_set_phys_mm(&pmm);
+    vmm_set_current(&(thrptr->vmm));
+
+    // Kernel maps lower 1 gb, user maps starting at first mb
+    #define KERNEL_BASE 0x0
+    #define USER_BASE   0x40000000 
+    
+    // round _end to page size
+    memheap = PMM_ALIGN_ADDR(memheap);
+    
+    // map the kernel
+    paddr_t cur_paddr;
+    vaddr_t cur_vaddr;
+    for (cur_paddr = 0x0, cur_vaddr = 0x0; cur_paddr < (paddr_t)memheap; cur_paddr += PMM_FRAME_SIZE, cur_vaddr += PMM_FRAME_SIZE) {
+        page_table_map(&(thrptr->vmm.page_table), cur_paddr, cur_vaddr);
+    }
+    
+    kprintf("Turning on MMU.\r\n");
+    
+    // TODO - move mmu init code into proper function
+#ifdef PLATFORM_RASPBERRY_PI
+    asm("mov r0, #0x3");
+    asm("mcr p15, 0, r0, c3, c0, 0");
+
+    // enable
+    asm("mrc p15, 0, r0, c1, c0, 0");
+    asm("orr r0, r0, #0x1");
+    asm("mcr p15, 0, r0, c1, c0, 0");
+    kprintf("MMU enabled.\r\n");
+#else
+#   warning "No MMU initialization code for current platform."
+#endif
+    kprintf("Ending MMU initialization.\r\n");
+    
 
     kprintf("&_end is 0x%x\r\n", &_end);
 
