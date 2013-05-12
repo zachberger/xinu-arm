@@ -14,6 +14,8 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t u8;
 
+/* Use some free memory in the area below the kernel/stack */
+#define BUFFER_ADDRESS 0x1000
 
 #define BCM2835_ARM_MAPPED_REG_BASE             0x20000000
 #define BCM2835_VC_MAPPED_REG_BASE              0x7E000000
