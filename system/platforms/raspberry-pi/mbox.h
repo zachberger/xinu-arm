@@ -117,5 +117,6 @@ int mbox_write(uint8_t chan, uint32_t value);
 
 u32 mailbox_read(u8 chan);
 int mailbox_write(u8 chan, u32 val);
+void mailbox_error();
 
 #endif

@@ -1,6 +1,19 @@
 //Eric Warrington
 
-#include "mbox.h"uint32_t arm_to_vcbase_addr(void* arm_addr){	// TODO - somehow detect if L2 is enabled?	return ((uint32_t)arm_addr) + BCM2835_VC_MEM_BASE_L2UNCACHED;}void* vcbase_to_arm_addr(uint32_t vcbase_addr){	// TODO - somehow detect if L2 is enabled?	return (void*)(vcbase_addr - BCM2835_VC_MEM_BASE_L2UNCACHED);}
+#include "mbox.h"
+
+uint32_t arm_to_vcbase_addr(void* arm_addr)
+{
+	// TODO - somehow detect if L2 is enabled?
+	return ((uint32_t)arm_addr) + BCM2835_VC_MEM_BASE_L2UNCACHED;
+}
+
+void* vcbase_to_arm_addr(uint32_t vcbase_addr)
+{
+	// TODO - somehow detect if L2 is enabled?
+	return (void*)(vcbase_addr - BCM2835_VC_MEM_BASE_L2UNCACHED);
+}
+
 
 static u32 mailbox_empty();
 static u32 mailbox_full();
@@ -12,8 +25,23 @@ static u32 mailbox_status()
 
 
 
-uint32_t mbox_read_reg(uint32_t reg){	return *(uint32_t*)(BCM2835_ARM_MAPPED_REG_BASE + reg);}uint32_t mbox_write_reg(uint32_t reg, uint32_t value){	*(uint32_t*)(BCM2835_ARM_MAPPED_REG_BASE + reg) = value;}
-int mbox_read(uint8_t chan, uint32_t* value){	return -1;}
+
+uint32_t mbox_read_reg(uint32_t reg)
+{
+	return *(uint32_t*)(BCM2835_ARM_MAPPED_REG_BASE + reg);
+}
+
+uint32_t mbox_write_reg(uint32_t reg, uint32_t value)
+{
+	*(uint32_t*)(BCM2835_ARM_MAPPED_REG_BASE + reg) = value;
+}
+
+
+int mbox_read(uint8_t chan, uint32_t* value)
+{
+	return -1;
+}
+
 //return read value; 0 on error
 u32 mailbox_read(u8 chan)
 {
@@ -37,7 +65,11 @@ u32 mailbox_read(u8 chan)
     }
 }
 
-int mbox_write(uint8_t chan, uint32_t value){	return -1;}
+
+int mbox_write(uint8_t chan, uint32_t value)
+{
+	return -1;
+}
 
 // return status; 0 on error
 int mailbox_write(u8 chan, u32 val)
@@ -70,5 +102,11 @@ static u32 mailbox_full()
     return mailbox_status() & MAILBOX_FULL;
 }
 
-
-
+static void mailbox_error()
+{
+    //while(1)
+    {
+        printf("Mailbox Error\n");
+        //led_flash_num(num, FB_ERROR_MAX_BITS);
+    }
+}
