@@ -102,7 +102,7 @@ static u32 mailbox_full()
     return mailbox_status() & MAILBOX_FULL;
 }
 
-static void mailbox_error()
+void mailbox_error()
 {
     //while(1)
     {
