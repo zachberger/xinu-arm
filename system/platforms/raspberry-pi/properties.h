@@ -3,7 +3,7 @@
 
 #include "mbox.h"
 
-u32 get_firmware_revision();
+u32 get_vc_firmware_revision();
 u32 get_board_model();
 u64 get_board_serial();
 
@@ -12,13 +12,14 @@ u64 get_board_serial();
  * Represents a reigon of memory.
  * TODO: Continue documenting 
  */
-typedef struct mem_reigon {
+typedef struct mem_region
+{
 	u32 base_address;
 	u32 block_size;
-};
+} mem_region;
 
-mem_reigon get_arm_memory();
-mem_reigon get_vc_memory();
+mem_region get_arm_memory();
+mem_region get_vc_memory();
 
 
 u32 get_temperature();
