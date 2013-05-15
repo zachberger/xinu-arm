@@ -11,7 +11,7 @@
  * A vmm_t structure represents a virtual address space and the page table that maps that virtual address space.
  */
 typedef struct vmm_t {
-    page_table_t page_table;
+    page_table_t *page_table;
     pmm_t vaddr_space_mm;
 } vmm_t;
 

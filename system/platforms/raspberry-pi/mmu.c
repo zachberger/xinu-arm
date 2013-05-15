@@ -130,7 +130,7 @@ paddr_t page_table_unmap(page_table_t* table, vaddr_t virt) {
 void vmm_set_current(vmm_t* new_vmm) {
     // TODO flush tlb, or use the process identifiers
     _current_page_table = new_vmm;
-    asm("mcr p15, 0, %0, c2, c0, 0" : : "r" (_current_page_table->page_table.master) : "memory");
+    asm("mcr p15, 0, %0, c2, c0, 0" : : "r" (_current_page_table->page_table->master) : "memory");
 }
 
 vmm_t* vmm_get_current(void) {
@@ -154,6 +154,7 @@ vaddr_t vmm_alloc_n(size_t num_pages, bool* out_failed) {
     if (failed == false) {
         vaddr_t curr_vaddr = vaddr;
         int i;
+        kprintf("mapping %d pages [vmm_alloc_n]\r\n", num_pages);
         for (i = 0; i < num_pages; ++i) {
             // allocate a physical frame of memory
             paddr_t phys_addr = pmm_alloc_frame(_phys_mm, &failed);
