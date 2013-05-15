@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../system/platforms/raspberry-pi/mbox.h"
+#include "../system/platforms/raspberry-pi/framebuffer.h"
 
 void next_color(u8 *r, u8 *g, u8 *b)
 {
@@ -27,9 +27,11 @@ void next_color(u8 *r, u8 *g, u8 *b)
     }
 }
 
-void fbtest() {
+void fbtest()
+{
     struct fb_info* fb = fb_init();
-    if (!fb) {
+    if(!fb)
+    {
         printf("fb null\n");
         return;
     }
@@ -42,9 +44,11 @@ void fbtest() {
     u8 r, g, b;
     r0 = 31; g0 = 0; b0 = 0; /* begin with red */
     addr = (u16 *)fb->fb_ptr;
-    for (j = 0; j < fb->height; j++) {
+    for(j = 0; j < fb->height; j++)
+    {
         r = r0; g = g0; b = b0;
-        for (i = 0; i < fb->width; i++) {
+        for(i = 0; i < fb->width; i++)
+        {
             color = (r << 11) | (g << 5) | b;
             *addr++ = color;
             next_color(&r, &g, &b);
