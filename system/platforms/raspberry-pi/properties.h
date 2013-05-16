@@ -71,14 +71,14 @@ u32 set_turbo( u32 turbo );
 #define PIXEL 		0x000000009
 #define PWM   		0x00000000a
 
-u32 get_clock_state( u32 clock_id );
-u32 set_slock_state( u32 clock_id, u32 clock_state);
+u32 get_clock_state(u32 clock_id);
+u32 set_clock_state(u32 clock_id, u32 clock_state);
 
-u32 get_min_clock_rate( u32 clock_id );
-u32 get_max_clock_rate( u32 clock_id );
+u32 get_min_clock_rate(u32 clock_id);
+u32 get_max_clock_rate(u32 clock_id);
 
-u32 get_clock_rate( u32 clock_id );
-u32 set_clock_rate( u32 clock_id, u32 clock_rate );
+u32 get_clock_rate(u32 clock_id);
+u32 set_clock_rate(u32 clock_id, u32 clock_rate);
 
 
 #endif

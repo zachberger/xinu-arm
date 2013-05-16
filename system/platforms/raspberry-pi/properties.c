@@ -64,21 +64,67 @@ u32 get_min_voltage(u32 device_id)
 }
 
 
-u32 get_device_state( u32 device_id );
-u32 get_device_timing( u32 device_id );
-u32 set_device_state( u32 device_id, u32 state );
+/*
+  State:
+    Bit 0: 0=off, 1=on
+    Bit 1: 0=device exists, 1=device does not exist
+    Bits 2-31: reserved for future use
+*/
+
+u32 get_device_state(u32 device_id)
+{
+	/* tag - get device state*/	u32 tag=0x00020001;
+	return mb_prop7(tag, device_id, 0);
+}
+
+u32 get_device_timing(u32 device_id)
+{
+	/* tag - get device timing*/	u32 tag=0x00020002;
+	return mb_prop7(tag, device_id, 0);
+}
+
+u32 set_device_state(u32 device_id, u32 state)
+{
+	/* tag - set device state*/	u32 tag=0x00028001;
+	return mb_prop7(tag, device_id, state);
+}
 
 u32 get_turbo();
-u32 set_turbo( u32 turbo );
+u32 set_turbo(u32 turbo);
 
 
 
 
-u32 get_clock_state( u32 clock_id );
-u32 set_slock_state( u32 clock_id, u32 clock_state);
+u32 get_clock_state(u32 clock_id)
+{
+	/* tag - get clock state*/	u32 tag=0x00030001;
+	return mb_prop7(tag, clock_id, 0);
+}
 
-u32 get_min_clock_rate( u32 clock_id );
-u32 get_max_clock_rate( u32 clock_id );
+u32 set_clock_state(u32 clock_id, u32 clock_state)
+{
+	/* tag - set clock state*/	u32 tag=0x00038001;
+	return mb_prop7(tag, clock_id, clock_state);
+}
 
-u32 get_clock_rate( u32 clock_id );
-u32 set_clock_rate( u32 clock_id, u32 clock_rate );
+u32 get_max_clock_rate(u32 clock_id)
+{
+	/* tag - get max clock rate*/	u32 tag=0x00030004;
+	return mb_prop7(tag, clock_id, 0);
+}
+u32 get_min_clock_rate(u32 clock_id)
+{
+	/* tag - get min clock rate*/	u32 tag=0x00030007;
+	return mb_prop7(tag, clock_id, 0);
+}
+
+u32 get_clock_rate(u32 clock_id)
+{
+	/* tag - get clock rate*/	u32 tag=0x00030002;
+	return mb_prop7(tag, clock_id, 0);
+}
+u32 set_clock_rate(u32 clock_id, u32 clock_rate)
+{
+	/* tag - set clock rate*/	u32 tag=0x00038002;
+	return mb_prop7(tag, clock_id, clock_rate);
+}
