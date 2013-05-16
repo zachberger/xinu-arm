@@ -89,8 +89,20 @@ u32 set_device_state(u32 device_id, u32 state)
 	return mb_prop7(tag, device_id, state);
 }
 
-u32 get_turbo();
-u32 set_turbo(u32 turbo);
+
+u32 get_turbo()
+{
+	/* tag - get turbo*/	u32 tag=0x00030009;
+	return mb_prop7(tag, 0, 0);
+}
+
+//Level will be zero for non-turbo and one for turbo.
+//This will cause GPU clocks to be set to maximum when enabled and minimum when disabled.
+u32 set_turbo(u32 turbo)
+{
+	/* tag - set turbo*/	u32 tag=0x00038009;
+	return mb_prop7(tag, 0, turbo);
+}
 
 
 
