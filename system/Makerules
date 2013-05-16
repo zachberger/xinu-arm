@@ -20,6 +20,9 @@ C_FILES += semcreate.c semfree.c semcount.c signal.c signaln.c wait.c
 # Files for memory management
 C_FILES += memget.c memfree.c stkget.c bfpalloc.c bfpfree.c bufget.c buffree.c
 
+# Files for RPi malloc/free
+C_FILES += malloc.c free.c morecore.c sbrk.c
+
 # Files for interprocess communication
 C_FILES += send.c receive.c recvclr.c recvtime.c
 
